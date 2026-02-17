@@ -1,25 +1,32 @@
 <?php
-
 namespace App\Http\Controllers;
 
 // Models
+use App\Models\Designation;
 use App\Models\Employee;
 
 // Requests
-use Illuminate\Http\Request;
 use App\Http\Requests\EmployeeRequest;
-use App\Models\Designation;
+use Illuminate\Http\Request;
+
 // Session
 use Illuminate\Support\Facades\Session;
 
 class EmployeeController extends Controller
 {
+    public function profile(Employee $employee)
+    {
+        $employee->load('designation.skills');
+        return view('employee.profile', compact('employee'));
+    }
+
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //
+        $employees = Employee::with('designation')->get();
+        return view('employee.index', compact('employees'));
     }
 
     /**
@@ -27,8 +34,8 @@ class EmployeeController extends Controller
      */
     public function create()
     {
-        $designations=  Designation::pluck('title', 'id');
-        return view('employee.create',compact('designations'));
+        $designations = Designation::pluck('title', 'id');
+        return view('employee.create', compact('designations'));
     }
 
     /**
@@ -40,10 +47,12 @@ class EmployeeController extends Controller
         if ($input) {
             Employee::create($input);
             Session::flash('success', 'Employee created successfully.');
-            return (view('welcome'));
+
+            return view('welcome');
         } else {
             Session::flash('error', 'Failed to create Employee.');
-            return (view('welcome'));
+
+            return view('welcome');
         }
     }
 

@@ -2,9 +2,10 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Skill;
 use Illuminate\Foundation\Http\FormRequest;
 
-class DesignationRequest extends FormRequest
+class SkillRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -18,9 +19,7 @@ class DesignationRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title' => ['required', 'regex:/^[A-Za-z\s]+$/', 'max:255', 'unique:designations,title'],
-            'description' => ['required', 'string'],
-            'skill_id' => ['nullable', 'exists:skills,id'],
+            'name' => ['required','unique:'.Skill::class.',name', 'regex:/^[A-Za-z\s]+$/', 'max:60'],
         ];
     }
 
@@ -28,7 +27,7 @@ class DesignationRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'title.regex' => 'Enter the alphabets only.',
+            'name.regex' => 'Enter the name with alphabets only.',
         ];
     }
 }

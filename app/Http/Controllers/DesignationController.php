@@ -3,12 +3,11 @@
 namespace App\Http\Controllers;
 
 // Models
-use App\Models\Designation;
-
-// Requests
-use Illuminate\Http\Request;
 use App\Http\Requests\DesignationRequest;
-
+use App\Models\Designation;
+// Requests
+use App\Models\Skill;
+use Illuminate\Http\Request;
 // Session
 use Illuminate\Support\Facades\Session;
 
@@ -25,8 +24,11 @@ class DesignationController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create() {
-        return view('designation.create');
+    public function create()
+    {
+        $skills = Skill::pluck('name', 'id');
+
+        return view('designation.create', compact('skills'));
     }
 
     /**
@@ -35,14 +37,18 @@ class DesignationController extends Controller
     public function store(DesignationRequest $request)
     {
         $input = $request->validated();
-        if ($input) {
-            Designation::create($input);
+        $skill_ids = $input['skill_id'] ?? [];
+        unset($input['skill_id']);
+
+        if ($input && ! empty($skill_ids)) {
+            $designation = Designation::create($input);
+            $designation->skills()->attach($skill_ids);
             Session::flash('success', 'Designation created successfully.');
-            return (view('welcome'));
         }else{
-            Session::flash('error', 'Failed to create designation.');
-            return (view('welcome'));
+            Session::flash('failed', 'Failed to create the designation');
         }
+
+        return view('admin.dashboard');
     }
 
     /**
