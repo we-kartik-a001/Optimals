@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers;
 
 // Models
@@ -6,14 +7,46 @@ use App\Models\Designation;
 use App\Models\Employee;
 
 // Requests
-use App\Http\Requests\EmployeeRequest;
 use Illuminate\Http\Request;
+use App\Http\Requests\EmployeeAuthenticateRequest;
+use App\Http\Requests\EmployeeRequest;
+
+// Authentication
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 // Session
 use Illuminate\Support\Facades\Session;
 
 class EmployeeController extends Controller
 {
+    /**
+     * Show the employee login form
+     */
+    public function login()
+    {
+        return view('employee.authenticate.employee_login');
+    }
+
+    // Authenticate employee credentials and Login
+    public function authenticate(EmployeeAuthenticateRequest $request)
+    {
+        $credentials = $request->validated();
+
+        if (Auth::guard('employee')->attempt($credentials)) {
+            $request->session()->regenerate();
+            Session::flash('success', 'Employee logged in successfully.');
+            
+            $employee = Auth::guard('employee')->user();
+            return $this->profile($employee);
+        }
+
+        return back()->withErrors(['email' => 'Invalid credentials'])->onlyInput('email');
+    }
+
+    /**
+     * Show employee profile
+     */
     public function profile(Employee $employee)
     {
         $employee->load('designation.skills');
@@ -44,17 +77,18 @@ class EmployeeController extends Controller
     public function store(EmployeeRequest $request)
     {
         $input = $request->validated();
+        $input['password'] = Hash::make($input['password']);
+
         if ($input) {
             Employee::create($input);
             Session::flash('success', 'Employee created successfully.');
-
-            return view('welcome');
         } else {
             Session::flash('error', 'Failed to create Employee.');
-
-            return view('welcome');
         }
+
+        return redirect()->route('admin.dashboard');
     }
+
 
     /**
      * Display the specified resource.
