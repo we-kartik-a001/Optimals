@@ -10,7 +10,9 @@ use App\Http\Controllers\SkillController;
 use Illuminate\Support\Facades\Route;
 
 // Redirect root to login so login page appears first
-Route::get('/', function () {return view('welcome');});
+Route::get('/', function () {
+    return view('welcome');
+});
 
 // Named route for auth middleware redirect (unauthenticated users go here)
 Route::get('/login', function () {
@@ -27,14 +29,19 @@ Route::post('/admin/store', [AdminController::class, 'store'])->name('admin.stor
 Route::get('/employee/login', [EmployeeController::class, 'login'])->name('employee.login');
 Route::post('/employee/authenticate', [EmployeeController::class, 'authenticate'])->name('employee.authenticate');
 
+// Employee routes (require employee login)
+Route::middleware('auth:employee')->group(function () {
+    Route::get('/employee/profile', [EmployeeController::class, 'profile'])->name('employee.profile');
+    Route::post('/employee/logout', [EmployeeController::class, 'logout'])->name('employee.logout');
+});
+
 // All other routes require admin login
 Route::middleware('auth:admin')->group(function () {
     // Admin Routes
     Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard');
     Route::post('/admin/logout', [AdminController::class, 'logout'])->name('admin.logout');
 
-    // Employee Routes
-    Route::get('/employee/profile', [EmployeeController::class, 'profile'])->name('employee.profile');
+    // Employee Management Routes (admin only)
     Route::get('/employee/index', [EmployeeController::class, 'index'])->name('employee.index');
     Route::get('/employees/{employee}', [EmployeeController::class, 'profile'])->name('employees.profile');
     Route::get('/employee/create', [EmployeeController::class, 'create'])->name('employee.create');

@@ -23,7 +23,7 @@ class EmployeeRequest extends FormRequest
             'password' => ['required','min:6','confirmed'],
             'email' => ['required', 'email', 'unique:employees,email'],
             'designation_id' => ['nullable', 'exists:designations,id'],
-            'salary' => ['required', 'numeric', 'min:0'],
+            'salary' => ['required', 'numeric', 'min:0','max:99999999.99'],
         ];
     }
 

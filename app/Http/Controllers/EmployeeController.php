@@ -121,4 +121,16 @@ class EmployeeController extends Controller
     {
         //
     }
+
+    /**
+     * Logout employee
+     */
+    public function logout(Request $request)
+    {
+        Auth::guard('employee')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        Session::flash('success', 'Logged out successfully.');
+        return redirect()->route('employee.login');
+    }
 }
