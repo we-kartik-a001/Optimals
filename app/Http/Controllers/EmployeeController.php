@@ -36,16 +36,24 @@ class EmployeeController extends Controller
         if (Auth::guard('employee')->attempt($credentials)) {
             $request->session()->regenerate();
             Session::flash('success', 'Employee logged in successfully.');
-            
-            $employee = Auth::guard('employee')->user();
-            return $this->profile($employee);
+            return redirect()->intended(route('employee.profile'));
         }
 
         return back()->withErrors(['email' => 'Invalid credentials'])->onlyInput('email');
     }
 
     /**
-     * Show employee profile
+     * Show the logged-in employee's own profile (no ID in URL).
+     */
+    public function myProfile()
+    {
+        $employee = Auth::guard('employee')->user();
+        $employee->load('designation.skills');
+        return view('employee.profile', compact('employee'));
+    }
+
+    /**
+     * Show employee profile by ID (admin viewing any employee).
      */
     public function profile(Employee $employee)
     {
@@ -58,6 +66,9 @@ class EmployeeController extends Controller
      */
     public function index()
     {
+        if (!Auth::guard('admin')->check()) {
+            abort(403, 'Unauthorized');
+        }
         $employees = Employee::with('designation')->get();
         return view('employee.index', compact('employees'));
     }
@@ -67,6 +78,9 @@ class EmployeeController extends Controller
      */
     public function create()
     {
+        if (!Auth::guard('admin')->check()) {
+            abort(403, 'Unauthorized');
+        }
         $designations = Designation::pluck('title', 'id');
         return view('employee.create', compact('designations'));
     }
@@ -76,6 +90,9 @@ class EmployeeController extends Controller
      */
     public function store(EmployeeRequest $request)
     {
+        if (!Auth::guard('admin')->check()) {
+            abort(403, 'Unauthorized');
+        }
         $input = $request->validated();
         $input['password'] = Hash::make($input['password']);
 

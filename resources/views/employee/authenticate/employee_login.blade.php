@@ -35,11 +35,6 @@
                     Login
                 </button>
             </form>
-
-            <p class="text-center mt-4 text-sm">
-                Don't have an account?
-                <a href="{{ route('admin.create') }}" class="text-blue-600 hover:underline">Register here</a>
-            </p>
         </div>
     </div>
 @endsection
