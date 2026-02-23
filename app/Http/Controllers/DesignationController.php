@@ -14,11 +14,30 @@ use Illuminate\Support\Facades\Session;
 class DesignationController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Show Designation Detail
      */
-    public function index()
+    public function show(Designation $designation)
     {
-        //
+        $designation->load('skills');
+
+        return view('designation.show', compact('designation'));
+    }
+
+    /**
+     * List Designations
+     */
+    public function index(Request $request)
+    {
+        $search = $request->query('search');
+
+        $designations = Designation::with('skills')
+            ->when($search, function ($query, $search) {
+                $query->where('title', 'like', "%{$search}%");  
+            })
+            ->paginate(2)
+            ->withQueryString();
+
+        return view('designation.index', compact('designations', 'search'));
     }
 
     /**
@@ -42,46 +61,62 @@ class DesignationController extends Controller
 
         if ($input) {
             $designation = Designation::create($input);
-            if (!empty($skill_ids)) {
+            if (! empty($skill_ids)) {
                 $designation->skills()->attach($skill_ids);
             }
             Session::flash('success', 'Designation created successfully.');
-        }else{
+        } else {
             Session::flash('failed', 'Failed to create the designation');
         }
 
-        return redirect()->route('admin.dashboard');
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Designation $designation)
-    {
-        //
+        return redirect()->route('designation.index');
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(Designation $designation)
+    public function edit($id)
     {
-        //
+        $designation = Designation::with('skills')->findOrFail($id);
+        $skills = Skill::pluck('name', 'id');
+
+        return view('designation.edit', compact('designation', 'skills'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, Designation $designation)
+    public function update(Request $request, $id)
     {
-        //
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'skill_id' => 'nullable|array',
+        ]);
+
+        $designation = Designation::findOrFail($id);
+
+        $designation->update([
+            'title' => $request->title,
+            'description' => $request->description,
+        ]);
+
+        // Sync many-to-many skills
+        $designation->skills()->sync($request->skill_id);
+
+        return redirect()->route('designation.index')
+            ->with('success', 'Designation updated successfully');
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Designation $designation)
+    public function delete(Designation $designation)
     {
-        //
+        $designation->delete();
+
+        Session::flash('success', 'Designation deleted successfully.');
+
+        return redirect()->route('designation.index');
     }
 }

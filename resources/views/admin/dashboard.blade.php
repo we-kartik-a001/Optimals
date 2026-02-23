@@ -17,8 +17,9 @@
     </div>
 
     <div class="max-w-7xl mx-auto px-4 py-8">
+
         @if (session('success'))
-            <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+            <div id="flash-message" class="bg-green-500 text-white p-3 text-center transition-opacity duration-500 my-3">
                 {{ session('success') }}
             </div>
         @endif
@@ -29,9 +30,9 @@
                 Create New Admin
             </a>
 
-            <a href="{{ route('designation.create') }}"
+            <a href="{{ route('designation.index') }}"
                 class="bg-purple-600 text-white px-6 py-4 rounded text-center font-semibold hover:bg-purple-700">
-                Create Designation
+                Designation List
             </a>
 
             <a href="{{ route('employee.index') }}"

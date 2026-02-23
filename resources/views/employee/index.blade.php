@@ -7,16 +7,39 @@
                 Employee List
             </h2>
 
-            <div class="flex gap-4">
-                <a href="/admin/dashboard" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">
-                    Back
-                </a>
-                <a class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700" href="{{ route('employee.create') }}">Create employee</a>
-            </div>
+
         </div>
 
+        <div class="flex justify-between items-center ">
+            <form method="GET" action="{{ route('employee.index') }}" class="mb-4">
+                <div class="flex gap-2">
+                    <input type="text" name="search" value="{{ request('search') }}"
+                        placeholder="Search by name, email, or designation"
+                        class="border px-4 py-2 rounded w-72 focus:outline-none focus:ring">
+
+                    <button type="submit" class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-700">
+                        Search
+                    </button>
+
+                    @if (request('search'))
+                        <a href="{{ route('employee.index') }}" class="bg-gray-500 text-white px-4 py-2 rounded">
+                            Clear
+                        </a>
+                    @endif
+                </div>
+            </form>
+
+            <div class="flex gap-4">
+                <a href="/admin/dashboard" class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-700">
+                    Back
+                </a>
+                <a class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-700"
+                    href="{{ route('employee.create') }}">Create employee</a>
+            </div>
+        </div>
+        
         <table class="w-full border border-gray-200">
-            <thead class="bg-gray-100">
+            <thead class="bg-gray-800 text-white">
                 <tr>
                     <th class="p-2 border">#</th>
                     <th class="p-2 border">Name</th>
@@ -25,6 +48,8 @@
                     <th class="p-2 border">Designation</th>
                     <th class="p-2 border">Salary</th>
                     <th class="p-2 border">View Profile</th>
+                    <th class="p-2 border">Update</th>
+                    <th class="p-2 border">Delete</th>
                 </tr>
             </thead>
             <tbody>
@@ -45,6 +70,21 @@
                                 View
                             </a>
                         </td>
+                        <td class="p-2 border">
+                            <a href="{{ route('employee.edit', $employee->id) }}"
+                                class="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700 text-sm">
+                                Update
+                            </a>
+                        </td>
+                        <td class="p-2 border">
+                            <form action="{{ route('employee.delete', $employee->id) }}" method="POST">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="bg-red-600 text-white px-3 py-1 rounded">
+                                    Delete
+                                </button>
+                            </form>
+                        </td>
                     </tr>
 
                 @empty
@@ -54,7 +94,13 @@
                         </td>
                     </tr>
                 @endforelse
+
+
             </tbody>
+
         </table>
+        <div class="mt-4">
+            {{ $employees->links() }}
+        </div>
     </div>
 @endsection
